@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chatter — Minimal Social Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#121735; --muted:#93a5fd; --text:#e8eeff; --accent:#6c7cff; --accent-2:#16db65; --danger:#ff5c7a;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(120deg,#0b1020,#141a3f);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    .sidebar{background:rgba(18,23,53,.7);backdrop-filter: blur(8px);border-right:1px solid rgba(255,255,255,.08);padding:16px;display:flex;flex-direction:column;gap:16px}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:700}
+    .logo .dot{width:10px;height:10px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 18px var(--accent-2)}
+    .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px}
+    .user-card{display:flex;align-items:center;gap:10px;padding:12px}
+    .user-card img{width:36px;height:36px;border-radius:50%}
+    .btn, button, input, textarea, select{font-family:inherit}
+    .btn{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}
+    .btn.primary{background:var(--accent);border-color:transparent}
+    .btn.ghost{background:transparent;border-color:rgba(255,255,255,.1)}
+    .btn.full{width:100%}
+    .btn.danger{background:var(--danger);border-color:transparent}
+    .muted{color:#a8b0d6;font-size:.9rem}
+    .search{display:flex;gap:8px;padding:10px}
+    .search input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.2);color:var(--text)}
+    .nav{display:flex;flex-direction:column;gap:8px;padding:10px}
+    .nav .item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer}
+    .nav .item.active,.nav .item:hover{background:rgba(255,255,255,.08)}
+    .chats{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:auto}
+    .chat-row{display:grid;grid-template-columns:46px 1fr auto;gap:10px;padding:10px;border-radius:12px;cursor:pointer}
+    .chat-row:hover{background:rgba(255,255,255,.06)}
+    .chat-row img{width:46px;height:46px;border-radius:50%}
+    .chat-row .name{font-weight:600}
+    .chat-row .last{color:#b7bde3;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .main{display:flex;flex-direction:column;height:100vh}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(18,23,53,.6);backdrop-filter: blur(8px)}
+    .topbar .title{display:flex;align-items:center;gap:10px}
+    .content{position:relative; height:calc(100vh - 56px)}
+    .view{position:absolute; inset:0; display:none}
+    .view.active{display:block}
+    /* Chat view */
+    .messages{padding:14px;overflow:auto;display:flex;flex-direction:column;gap:8px;height:calc(100% - 86px)}
+    .bubble{max-width:70%;padding:10px 12px;border-radius:14px;line-height:1.35}
+    .me{align-self:flex-end;background:linear-gradient(135deg,var(--accent),#8e99ff)}
+    .you{align-self:flex-start;background:rgba(255,255,255,.08)}
+    .composer{display:grid;grid-template-columns:1fr auto;gap:10px;padding:12px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.15);height:86px}
+    .composer textarea{resize:none;height:50px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.2);color:var(--text)}
+    .auth{max-width:420px;margin:8vh auto;padding:20px;}
+    .auth .group{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+    .auth input{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.2);color:var(--text)}
+    .switch{margin-top:6px;font-size:.95rem}
+    .empty{display:grid;place-items:center;height:100%;color:#aeb7e9}
+    .pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.18)}
+    /* People view */
+    .people-wrap{padding:12px; overflow:auto; height:100%; display:flex; flex-direction:column; gap:8px}
+    .person{display:grid;grid-template-columns:46px 1fr auto; gap:10px; padding:10px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06)}
+    .person img{width:46px;height:46px;border-radius:50%}
+    .person .name{font-weight:600}
+    .person .email{color:#b7bde3; font-size:.92rem}
+    /* Profile view */
+    .profile-wrap{padding:16px; max-width:720px}
+    .form-row{display:flex; gap:12px; margin:10px 0}
+    .form-row input, .form-row textarea{flex:1; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.2); color:var(--text)}
+    @media(max-width:980px){.app{grid-template-columns:1fr}.sidebar{position:fixed;z-index:10;inset:0 30% 0 0;transform:translateX(-100%);transition:.25s}.sidebar.open{transform:none} .topbar .menu{display:inline-block} .topbar .menu button{font-size:20px} .topbar .title{gap:8px}}
+    @media(min-width:981px){.topbar .menu{display:none}}
+  </style>
+</head>
+<body>
+<!-- =========== AUTH =========== -->
+<div id="authView" class="auth card" hidden>
+  <div class="logo" style="margin-bottom:12px"><span class="dot"></span> <span>Chatter</span></div>
+  <h2 id="authTitle">Create account</h2>
+  <div class="group"><label>Name</label><input id="nameInput" placeholder="Ada Lovelace"/></div>
+  <div class="group"><label>Email</label><input id="emailInput" type="email" placeholder="ada@chatter.app"/></div>
+  <div class="group"><label>Password</label><input id="passwordInput" type="password" placeholder="••••••••"/></div>
+  <div class="group"><button class="btn primary full" id="authSubmit">Sign up</button></div>
+  <div class="group"><button class="btn full" id="googleBtn">Continue with Google</button></div>
+  <div class="switch" id="authSwitch">Already have an account? <a href="#" id="toLogin">Sign in</a></div>
+  <p class="muted" style="margin-top:8px">Fill your Firebase config in the script to run locally.</p>
+</div>
+
+<!-- =========== APP =========== -->
+<div id="appView" class="app" hidden>
+  <aside class="sidebar" id="sidebar">
+    <div class="logo"><span class="dot"></span><span>Chatter</span></div>
+
+    <div class="card user-card">
+      <img id="meAvatar" src="https://api.dicebear.com/9.x/thumbs/svg?seed=me" alt="me">
+      <div>
+        <div id="meName" style="font-weight:600">—</div>
+        <div id="meEmail" class="muted">—</div>
+      </div>
+    </div>
+
+    <div class="card search">
+      <input id="userSearch" placeholder="Search people by name/email"/>
+      <button class="btn" id="inviteBtn">+</button>
+    </div>
+
+    <div class="nav card">
+      <div class="item active" id="navChats">💬 Chats</div>
+      <div class="item" id="navPeople">👥 People</div>
+      <div class="item" id="navProfile">🙍 Profile</div>
+      <div class="item" id="navLogout">🚪 Logout</div>
+    </div>
+
+    <div class="card" style="padding:8px;">
+      <div class="muted" style="padding:8px 8px 0">Recent chats</div>
+      <div class="chats" id="recentList"></div>
+    </div>
+
+    <div class="muted" style="padding:8px;text-align:center">Built with Firebase</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="title">
+        <div class="menu"><button class="btn ghost" id="toggleSidebar">☰</button></div>
+        <div><strong id="pageTitle">Welcome</strong><div id="pageSub" class="muted" style="font-size:.9rem">Select a conversation or find people to start chatting.</div></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- CHAT VIEW -->
+      <section id="chatView" class="view active">
+        <div class="messages" id="messages"></div>
+        <div class="composer" id="composer" hidden>
+          <textarea id="messageInput" placeholder="Type a message…"></textarea>
+          <button class="btn primary" id="sendBtn">Send</button>
+        </div>
+        <div class="empty" id="emptyState"><div class="pill">No chat selected</div></div>
+      </section>
+
+      <!-- PEOPLE VIEW -->
+      <section id="peopleView" class="view">
+        <div class="people-wrap" id="peopleList">
+          <!-- Filled dynamically -->
+        </div>
+      </section>
+
+      <!-- PROFILE VIEW -->
+      <section id="profileView" class="view">
+        <div class="profile-wrap card">
+          <h2>My Profile</h2>
+          <div class="form-row">
+            <input id="profileName" placeholder="Your name">
+          </div>
+          <div class="form-row">
+            <input id="profilePhoto" placeholder="Photo URL">
+          </div>
+          <div class="form-row">
+            <textarea id="profileBio" placeholder="Short bio (optional)"></textarea>
+          </div>
+          <div class="form-row">
+            <button class="btn primary" id="saveProfileBtn">Save Profile</button>
+            <button class="btn danger" id="logoutBtn">Logout</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  // === 1) Fill YOUR Firebase config here ===
+ // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCVycLshJ-NDjVPlaHBhX-xk-BpBLLm6Pg",
+  authDomain: "practical11-c4e74.firebaseapp.com",
+  projectId: "practical11-c4e74",
+  storageBucket: "practical11-c4e74.firebasestorage.app",
+  messagingSenderId: "493262185979",
+  appId: "1:493262185979:web:f998a55b3688529afc975e",
+  measurementId: "G-XD4Q5QENDZ"
+};
+  // === 2) Firebase SDKs (v10 modular) ===
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    signOut, updateProfile, GoogleAuthProvider, signInWithPopup
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+  import {
+    getFirestore, doc, setDoc, getDoc, addDoc, collection, getDocs,
+    serverTimestamp, onSnapshot, orderBy, updateDoc, query
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  // Init
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ===== DOM refs =====
+  const authView = document.getElementById('authView');
+  const appView = document.getElementById('appView');
+  const authTitle = document.getElementById('authTitle');
+  const nameInput = document.getElementById('nameInput');
+  const emailInput = document.getElementById('emailInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const authSubmit = document.getElementById('authSubmit');
+  const googleBtn = document.getElementById('googleBtn');
+
+  const meName = document.getElementById('meName');
+  const meEmail = document.getElementById('meEmail');
+  const meAvatar = document.getElementById('meAvatar');
+
+  const userSearch = document.getElementById('userSearch');
+  const inviteBtn = document.getElementById('inviteBtn');
+
+  const navChats = document.getElementById('navChats');
+  const navPeople = document.getElementById('navPeople');
+  const navProfile = document.getElementById('navProfile');
+  const navLogout = document.getElementById('navLogout');
+
+  const pageTitle = document.getElementById('pageTitle');
+  const pageSub = document.getElementById('pageSub');
+
+  const recentList = document.getElementById('recentList');
+  const sidebar = document.getElementById('sidebar');
+  const toggleSidebar = document.getElementById('toggleSidebar');
+
+  // Views
+  const chatView = document.getElementById('chatView');
+  const peopleView = document.getElementById('peopleView');
+  const profileView = document.getElementById('profileView');
+
+  // Chat UI
+  const messagesEl = document.getElementById('messages');
+  const composer = document.getElementById('composer');
+  const emptyState = document.getElementById('emptyState');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  // Profile UI
+  const profileName = document.getElementById('profileName');
+  const profilePhoto = document.getElementById('profilePhoto');
+  const profileBio = document.getElementById('profileBio');
+  const saveProfileBtn = document.getElementById('saveProfileBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  // People UI
+  const peopleList = document.getElementById('peopleList');
+
+  // State
+  let isSignup = true;
+  let activeChatId = null;
+  let messagesUnsub = null; // real-time listener cleanup
+  const provider = new GoogleAuthProvider();
+
+  // ===== Helpers =====
+  function debounce(fn, ms){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms) } }
+  function escapeHtml(s){ return s?.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])) }
+  function timeAgo(date){ const d = (typeof date==='number')? new Date(date):date; const diff = Math.floor((Date.now()-d.getTime())/1000); if(diff<60) return diff+"s"; if(diff<3600) return Math.floor(diff/60)+"m"; if(diff<86400) return Math.floor(diff/3600)+"h"; return Math.floor(diff/86400)+"d" }
+  function composeChatId(a,b){ return a < b ? `${a}_${b}` : `${b}_${a}` }
+
+  function setAuthMode(signup){
+    isSignup = signup;
+    authTitle.textContent = signup ? 'Create account' : 'Welcome back';
+    authSubmit.textContent = signup ? 'Sign up' : 'Sign in';
+    nameInput.parentElement.style.display = signup ? 'flex' : 'none';
+    const sw = document.getElementById('authSwitch');
+    sw.innerHTML = signup ? 'Already have an account? <a href="#" id="toLogin">Sign in</a>'
+                          : "Don't have an account? <a href='#' id='toSignup'>Create one</a>";
+    document.getElementById('toLogin')?.addEventListener('click', e=>{e.preventDefault(); setAuthMode(false)});
+    document.getElementById('toSignup')?.addEventListener('click', e=>{e.preventDefault(); setAuthMode(true)});
+  }
+  setAuthMode(true);
+
+  // ===== Auth actions =====
+  googleBtn.addEventListener('click', async ()=>{
+    try{
+      const cred = await signInWithPopup(auth, provider);
+      await ensureUserDoc(cred.user);
+    }catch(e){ alert(e.message) }
+  });
+
+  authSubmit.addEventListener('click', async ()=>{
+    const email = emailInput.value.trim();
+    const pass = passwordInput.value.trim();
+    if(!email || !pass){ alert('Email & password are required'); return; }
+    try{
+      if(isSignup){
+        const name = (nameInput.value.trim() || email.split('@')[0]).slice(0,50);
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(cred.user, {
+          displayName: name,
+          photoURL: `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(name)}`
+        });
+        await ensureUserDoc(cred.user);
+      }else{
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        await ensureUserDoc(cred.user);
+      }
+    }catch(e){ alert(e.message) }
+  });
+
+  navLogout.addEventListener('click', doLogout);
+  logoutBtn.addEventListener('click', doLogout);
+
+  async function doLogout(){
+    try{
+      if(messagesUnsub) { messagesUnsub(); messagesUnsub = null; }
+      activeChatId = null;
+      await signOut(auth);
+    }catch(e){ alert(e.message) }
+  }
+
+  // ===== View switching =====
+  function activateView(view){
+    [chatView, peopleView, profileView].forEach(v => v.classList.remove('active'));
+    view.classList.add('active');
+    sidebar.classList.remove('open');
+  }
+
+  navChats.addEventListener('click', ()=>{
+    pageTitle.textContent = 'Chats';
+    pageSub.textContent = 'Your recent conversations appear here.';
+    activateView(chatView);
+  });
+
+  navPeople.addEventListener('click', async ()=>{
+    pageTitle.textContent = 'People';
+    pageSub.textContent = 'Find people and start chatting.';
+    activateView(peopleView);
+    await loadPeople(); // refresh each time
+  });
+
+  navProfile.addEventListener('click', async ()=>{
+    pageTitle.textContent = 'My Profile';
+    pageSub.textContent = 'Update your name, photo, and bio.';
+    activateView(profileView);
+    await loadProfile();
+  });
+
+  toggleSidebar.addEventListener('click', ()=> sidebar.classList.toggle('open'));
+
+  // ===== Auth state wiring =====
+  onAuthStateChanged(auth, async (user)=>{
+    if(user){
+      authView.hidden = true; appView.hidden = false;
+      meName.textContent = user.displayName || 'Anonymous';
+      meEmail.textContent = user.email || '';
+      meAvatar.src = user.photoURL || `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(user.uid)}`;
+      loadRecentChats(user.uid);
+      // Default to Chats
+      navChats.click();
+    }else{
+      appView.hidden = true; authView.hidden = false; setAuthMode(false);
+      messagesEl.innerHTML = ''; recentList.innerHTML = '';
+    }
+  });
+
+  // Create user doc if missing (Add Users)
+  async function ensureUserDoc(user){
+    const ref = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
+    if(!snap.exists()){
+      await setDoc(ref, {
+        uid:user.uid,
+        name:user.displayName||'Anonymous',
+        email:user.email||'',
+        photoURL:user.photoURL||'',
+        bio:'',
+        createdAt: serverTimestamp()
+      });
+    }
+  }
+
+  // ===== People (Show people + start chat) =====
+  userSearch.addEventListener('input', debounce(loadPeople, 300));
+
+  async function loadPeople(){
+    const me = auth.currentUser;
+    if(!me) return;
+
+    const term = userSearch.value.trim().toLowerCase();
+    const usersRef = collection(db, 'users');
+    const qs = await getDocs(usersRef);
+    const all = qs.docs.map(d=>d.data()).filter(u=>u.uid!==me.uid);
+
+    const filtered = term
+      ? all.filter(u => (u.name||'').toLowerCase().includes(term) || (u.email||'').toLowerCase().includes(term))
+      : all.slice(0,200);
+
+    peopleList.innerHTML = '';
+    if(filtered.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.innerHTML = '<div class="pill">No people found</div>';
+      peopleList.appendChild(empty);
+      return;
+    }
+
+    filtered.forEach(u=>{
+      const row = document.createElement('div');
+      row.className = 'person';
+      row.innerHTML = `
+        <img src="${u.photoURL || `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(u.name||u.uid)}`}" alt="">
+        <div>
+          <div class="name">${escapeHtml(u.name||'User')}</div>
+          <div class="email">${escapeHtml(u.email||'')}</div>
+        </div>
+        <div><button class="btn">Chat</button></div>
+      `;
+      row.querySelector('button').addEventListener('click', ()=> startChatWith(u.uid));
+      peopleList.appendChild(row);
+    });
+  }
+
+async function startChatWith(otherUid){
+  const me = auth.currentUser;
+  if(!me || me.uid===otherUid) return;
+  const chatId = composeChatId(me.uid, otherUid);
+
+  // Create chat doc if not exists
+  const chatRef = doc(db, 'chats', chatId);
+  const chatSnap = await getDoc(chatRef);
+  if(!chatSnap.exists()){
+    await setDoc(chatRef, {
+      chatId,
+      participants:[me.uid, otherUid],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      lastMessage:''
+    });
+  }
+
+  // Mirror in userChats
+  const otherSnap = await getDoc(doc(db,'users',otherUid));
+  const otherData = otherSnap.data();
+  const meSnap = await getDoc(doc(db,'users',me.uid));
+  const meData = meSnap.data();
+
+  await setDoc(doc(db,'userChats',me.uid,'items',chatId), {
+    chatId,
+    otherUid,
+    otherName: otherData?.name || 'User',
+    otherPhoto: otherData?.photoURL || '',
+    lastMessage:'',
+    updatedAt: serverTimestamp()
+  }, { merge:true });
+
+  await setDoc(doc(db,'userChats',otherUid,'items',chatId), {
+    chatId,
+    otherUid: me.uid,
+    otherName: meData?.name || 'User',
+    otherPhoto: meData?.photoURL || '',
+    lastMessage:'',
+    updatedAt: serverTimestamp()
+  }, { merge:true });
+
+  // ✅ FIX: Pass email too
+  openChat(chatId, {
+    uid: otherUid,
+    name: otherData?.name,
+    photo: otherData?.photoURL,
+    email: otherData?.email
+  });
+
+  // ❌ REMOVE this → it was resetting to "Chats"
+  // navChats.click();
+}
+
+
+  // ===== Recent chats (live) =====
+  function loadRecentChats(uid){
+    const ucRef = collection(db, 'userChats', uid, 'items');
+    const qy = query(ucRef, orderBy('updatedAt','desc'));
+    onSnapshot(qy, (qs)=>{
+      recentList.innerHTML = '';
+      qs.forEach(docu=>{
+        const c = docu.data();
+        const row = document.createElement('div');
+        row.className = 'chat-row';
+        row.dataset.chatId = c.chatId;
+        row.innerHTML = `
+          <img src="${c.otherPhoto || `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(c.otherUid)}`}" alt="pfp">
+          <div><div class="name">${escapeHtml(c.otherName||'User')}</div><div class="last">${escapeHtml(c.lastMessage||'Say hi 👋')}</div></div>
+          <div class="muted">${timeAgo(c.updatedAt?.toDate?.()||new Date())}</div>`;
+        row.addEventListener('click', ()=> openChat(c.chatId, {uid:c.otherUid, name:c.otherName, photo:c.otherPhoto}));
+        recentList.appendChild(row);
+      });
+    });
+  }
+
+  // ===== Open chat & real-time messages =====
+  function openChat(chatId, other){
+    activeChatId = chatId;
+    pageTitle.textContent = other?.name || 'Chat';
+    pageSub.textContent = other?.email || '';
+    activateView(chatView);
+    emptyState.hidden = true; composer.hidden = false; messagesEl.innerHTML = '';
+    sidebar.classList.remove('open');
+
+    if(messagesUnsub) messagesUnsub();
+    const msgsRef = collection(db,'chats',chatId,'messages');
+    const qy = query(msgsRef, orderBy('createdAt','asc'));
+    messagesUnsub = onSnapshot(qy, (qs)=>{
+      messagesEl.innerHTML = '';
+      qs.forEach(d=>{
+        const m = d.data();
+        const isMe = m.senderId === auth.currentUser?.uid;
+        const div = document.createElement('div');
+        div.className = `bubble ${isMe? 'me':'you'}`;
+        div.textContent = m.text;
+        messagesEl.appendChild(div);
+      });
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    });
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  messageInput.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+  });
+
+  async function sendMessage(){
+    const text = messageInput.value.trim();
+    if(!text || !activeChatId) return;
+    const me = auth.currentUser; if(!me) return;
+    messageInput.value = '';
+    const msgsRef = collection(db,'chats',activeChatId,'messages');
+    await addDoc(msgsRef, { text, senderId: me.uid, createdAt: serverTimestamp() });
+
+    // update last message mirrors
+    const chatRef = doc(db,'chats',activeChatId);
+    await updateDoc(chatRef, { lastMessage:text, updatedAt: serverTimestamp() });
+
+    // Determine other userId from chatId
+    const [a,b] = activeChatId.split('_');
+    const otherUid = me.uid===a? b:a;
+    await updateDoc(doc(db,'userChats',me.uid,'items',activeChatId), { lastMessage:text, updatedAt: serverTimestamp() });
+    await updateDoc(doc(db,'userChats',otherUid,'items',activeChatId), { lastMessage:text, updatedAt: serverTimestamp() });
+  }
+
+  // ===== Profile (open + save) =====
+  async function loadProfile(){
+    const me = auth.currentUser;
+    if(!me) return;
+    const ref = doc(db, 'users', me.uid);
+    const snap = await getDoc(ref);
+    const data = snap.data() || {};
+    profileName.value = data.name || me.displayName || '';
+    profilePhoto.value = data.photoURL || me.photoURL || '';
+    profileBio.value = data.bio || '';
+  }
+
+  saveProfileBtn.addEventListener('click', async ()=>{
+    const me = auth.currentUser;
+    if(!me) return;
+    const name = profileName.value.trim().slice(0,50);
+    const photoURL = profilePhoto.value.trim();
+    const bio = profileBio.value.trim().slice(0, 280);
+
+    try{
+      // Update Firebase Auth displayName/photo
+      await updateProfile(me, { displayName: name || me.displayName || 'Anonymous', photoURL: photoURL || me.photoURL || '' });
+      // Update Firestore user doc
+      await setDoc(doc(db,'users',me.uid), {
+        uid: me.uid, name: me.displayName || name, email: me.email || '', photoURL: me.photoURL || photoURL, bio, updatedAt: serverTimestamp()
+      }, { merge:true });
+
+      // Refresh header
+      meName.textContent = me.displayName || 'Anonymous';
+      meEmail.textContent = me.email || '';
+      meAvatar.src = me.photoURL || `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(me.uid)}`;
+      alert('Profile updated!');
+    }catch(e){ alert(e.message) }
+  });
+
+  // Invite button → simple mailto
+  inviteBtn.addEventListener('click', ()=>{
+    const url = location.href;
+    location.href = `mailto:?subject=Join me on Chatter&body=Let’s chat here: ${url}`;
+  });
+</script>
+</body>
+</html>
