@@ -1,0 +1,63 @@
+:root { --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #6b7280; --primary: #1d4ed8; --primary-600: #1e40af; --ring: rgba(29,78,216,0.25); }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 24px; }
+.nav { display: flex; gap: 12px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(15,23,42,0.08); margin-bottom: 24px; }
+.nav a { color: var(--text); text-decoration: none; padding: 6px 8px; border-radius: 6px; }
+.nav a:hover { background: rgba(2,6,23,0.04); }
+.nav a.active { background: rgba(2,6,23,0.06); }
+.nav .spacer { flex: 1; }
+.brand { font-weight: 800; letter-spacing: 0.2px; color: var(--text); }
+.brand::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 999px; background: var(--primary); opacity: .9; }
+
+.centered { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 120px); padding: 16px; }
+.card { width: 100%; max-width: 440px; background: var(--card); border: 1px solid rgba(2,6,23,0.08); border-radius: 12px; padding: 22px; box-shadow: 0 6px 20px rgba(2,6,23,0.06); transition: transform .08s ease, box-shadow .15s ease; }
+.card:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(2,6,23,0.08); }
+.card h2 { margin: 0 0 16px; font-size: 22px; }
+.muted { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+
+.form { display: grid; gap: 12px; }
+.field { display: grid; gap: 6px; }
+.label { font-size: 13px; color: var(--muted); }
+.input { padding: 12px 12px; font-size: 15px; border-radius: 8px; border: 1px solid rgba(2,6,23,0.12); background: #ffffff; color: var(--text); outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
+.input::placeholder { color: #9aa3b2; }
+.input:hover { background: rgba(255,255,255,0.04); }
+.input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
+.btn { margin-top: 6px; padding: 12px 14px; border-radius: 8px; border: 0; background: var(--primary); color: #fff; cursor: pointer; font-weight: 600; box-shadow: 0 6px 16px rgba(29,78,216,0.25); transition: transform .05s ease, box-shadow .12s ease; width: 100%; }
+.btn:hover { background: var(--primary-600); transform: translateY(-1px); box-shadow: 0 10px 20px rgba(29,78,216,0.28); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.hint { font-size: 13px; color: var(--muted); }
+.helper { font-size: 12px; color: var(--muted); margin-top: -2px; }
+.stack { display: grid; gap: 8px; }
+.error { color: #fca5a5; font-size: 13px; }
+.success { color: #86efac; font-size: 13px; }
+.row { display: flex; align-items: center; gap: 8px; }
+.right { margin-left: auto; }
+
+.dashboard { max-width: 760px; margin: 0 auto; padding: 24px; display: grid; gap: 16px; }
+.panel { background: var(--card); border: 1px solid rgba(2,6,23,0.08); border-radius: 12px; padding: 16px; box-shadow: 0 6px 18px rgba(2,6,23,0.06); }
+
+.avatar { width: 44px; height: 44px; border-radius: 999px; background: #e5e7eb; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; color: #111827; border: 1px solid rgba(2,6,23,0.12); text-transform: uppercase; }
+.hero { display: flex; align-items: center; gap: 12px; }
+
+.toggle { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--text); border-radius: 10px; padding: 8px 10px; cursor: pointer; }
+.toggle:hover { background: rgba(255,255,255,0.1); }
+
+.footer { margin-top: 48px; padding: 16px 0; font-size: 13px; color: var(--muted); border-top: 1px solid rgba(2,6,23,0.08); text-align: center; }
+
+/* Dark/Light theme toggle */
+.theme-toggle { margin-left: 8px; }
+.theme-dark body { background: linear-gradient(180deg, #0e1324, #0f172a); color: #e5e7eb; }
+.theme-dark .card, .theme-dark .panel { background: rgba(17,24,39,0.75); color: #e5e7eb; border-color: rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+.theme-dark .nav { border-bottom-color: rgba(255,255,255,0.08); }
+.theme-dark .nav a { color: #e5e7eb; }
+.theme-dark .brand { color: #ffffff; }
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  .container { padding: 16px; }
+  .nav { gap: 8px; }
+  .nav a { padding: 6px 8px; }
+  .card { padding: 18px; }
+}
