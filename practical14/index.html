@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Resume Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .upload-container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+      width: 400px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      border: 2px dashed #4CAF50;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      width: 100%;
+      cursor: pointer;
+      background: #f9fff9;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #777;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="upload-container">
+    <h2>Upload Resume</h2>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="resume" accept="application/pdf" required>
+      <br><br>
+      <button type="submit">Upload</button>
+    </form>
+    <p class="note">Only PDF files are allowed (Max size: 2MB)</p>
+  </div>
+</body>
+</html>
