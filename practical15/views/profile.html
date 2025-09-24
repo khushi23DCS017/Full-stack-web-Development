@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e8f0fe;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .profile-container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 400px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    p {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 25px;
+    }
+
+    button {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #d73833;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <h2>Welcome, <span id="username"></span></h2>
+    <p>Login time: <span id="logintime"></span></p>
+    <form action="/logout" method="post">
+      <button type="submit">Logout</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('username').textContent = "{{name}}";
+    document.getElementById('logintime').textContent = "{{logintime}}";
+  </script>
+</body>
+</html>
