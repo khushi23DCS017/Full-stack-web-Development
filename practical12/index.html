@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kids Calculator</title>
+</head>
+<body style="text-align:center; font-family: Arial;">
+  <h1>🧮 Simple Kids Calculator</h1>
+  <form action="/calculate" method="post">
+    <input type="text" name="num1" placeholder="Enter first number" required>
+    <br><br>
+    <input type="text" name="num2" placeholder="Enter second number" required>
+    <br><br>
+    <select name="operation">
+      <option value="add">➕ Add</option>
+      <option value="subtract">➖ Subtract</option>
+      <option value="multiply">✖ Multiply</option>
+      <option value="divide">➗ Divide</option>
+    </select>
+    <br><br>
+    <button type="submit">Calculate</button>
+  </form>
+</body>
+</html>
