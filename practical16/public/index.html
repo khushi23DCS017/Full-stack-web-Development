@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contact — Portfolio</title>
+  <style>
+    /* simple modern styling */
+    body { font-family: Inter, system-ui, Arial; background:#f4f6fb; color:#102a43; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+    .card { width:100%; max-width:700px; background:white; padding:28px; border-radius:12px; box-shadow:0 10px 25px rgba(16,42,67,0.08); }
+    h1 { margin:0 0 12px 0; font-size:20px; }
+    form { display:grid; gap:12px; }
+    input, textarea { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e1e8f0; font-size:14px; }
+    button { padding:10px 14px; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn-primary { background:linear-gradient(90deg,#6c5ce7,#2b8fe6); color:white; }
+    .msg { padding:10px; border-radius:8px; }
+    .msg.success { background:#e6fffa; color:#065f46; }
+    .msg.error { background:#ffe9e9; color:#7b1a1a; }
+    .field-error { color:#b31b1b; font-size:13px; }
+    .row { display:flex; gap:12px; }
+    @media (max-width:520px){ .row{flex-direction:column} }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Contact me</h1>
+    <div id="status" style="display:none;margin-bottom:10px"></div>
+
+    <form id="contactForm" novalidate>
+      <div class="row">
+        <div style="flex:1">
+          <input id="name" name="name" placeholder="Your name" required />
+          <div id="nameError" class="field-error"></div>
+        </div>
+        <div style="flex:1">
+          <input id="email" name="email" placeholder="you@domain.com" required />
+          <div id="emailError" class="field-error"></div>
+        </div>
+      </div>
+
+      <textarea id="message" name="message" rows="6" placeholder="Tell me about your project..." required></textarea>
+      <div id="messageError" class="field-error"></div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+        <button type="submit" id="submitBtn" class="btn-primary">Submit</button>
+        <div id="loading" style="display:none">Sending…</div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('contactForm');
+    const statusEl = document.getElementById('status');
+    const submitBtn = document.getElementById('submitBtn');
+    const loading = document.getElementById('loading');
+
+    function setStatus(type, text) {
+      statusEl.style.display = 'block';
+      statusEl.className = 'msg ' + (type === 'success' ? 'success' : 'error');
+      statusEl.textContent = text;
+    }
+
+    function clearStatus() {
+      statusEl.style.display = 'none';
+      statusEl.textContent = '';
+      statusEl.className = '';
+    }
+
+    function validateEmail(email) {
+      // simple regex — OK for client-side
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearStatus();
+      // clear field errors
+      ['nameError','emailError','messageError'].forEach(id => document.getElementById(id).textContent = '');
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const message = document.getElementById('message').value.trim();
+
+      let hasError = false;
+      if (!name) { document.getElementById('nameError').textContent = 'Name is required'; hasError = true; }
+      if (!email || !validateEmail(email)) { document.getElementById('emailError').textContent = 'Valid email is required'; hasError = true; }
+      if (!message || message.length < 5) { document.getElementById('messageError').textContent = 'Message too short'; hasError = true; }
+
+      if (hasError) return;
+
+      submitBtn.disabled = true;
+      loading.style.display = 'inline';
+
+      try {
+        const res = await fetch('/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, message })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          setStatus('success', data.message || 'Message sent! I will reply soon.');
+          form.reset();
+          // show ethereal preview link if present (for development)
+          if (data.previewUrl) {
+            const a = document.createElement('a');
+            a.href = data.previewUrl;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.textContent = 'Preview email (Ethereal)';
+            a.style.display = 'block';
+            a.style.marginTop = '8px';
+            statusEl.appendChild(a);
+          }
+        } else {
+          // server returned validation errors or send failure
+          if (data && data.errors && Array.isArray(data.errors)) {
+            data.errors.forEach(err => {
+              if (err.param === 'name') document.getElementById('nameError').textContent = err.msg;
+              if (err.param === 'email') document.getElementById('emailError').textContent = err.msg;
+              if (err.param === 'message') document.getElementById('messageError').textContent = err.msg;
+            });
+            setStatus('error', 'Please correct the highlighted fields.');
+          } else {
+            setStatus('error', (data && data.message) ? data.message : 'Failed to send your message.');
+          }
+        }
+      } catch (err) {
+        console.error('Submit error', err);
+        setStatus('error', 'Network or server error. Try again later.');
+      } finally {
+        submitBtn.disabled = false;
+        loading.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
