@@ -42,5 +42,8 @@
   "bugs": {
     "url": "https://github.com/yourusername/taskify/issues"
   },
-  "homepage": "https://yourusername.github.io/taskify"
+  "homepage": "https://yourusername.github.io/taskify",
+  "dependencies": {
+    "mongoose": "^8.18.3"
+  }
 }
