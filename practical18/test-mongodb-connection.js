@@ -4,7 +4,7 @@
 const mongoose = require('mongoose');
 
 // Replace this with your actual connection string
-const MONGO_URI = 'mongodb+srv://khushidadhaniya8_db_user:Heny_20051108@cluster0.xxxxx.mongodb.net/taskify?retryWrites=true&w=majority';
+const MONGO_URI = 'mongodb+srv://khushidadhaniya8_db_user:Heny_20051108@cluster0.7uzkhpd.mongodb.net/taskify?retryWrites=true&w=majority&appName=Cluster0';
 
 async function testConnection() {
   try {
