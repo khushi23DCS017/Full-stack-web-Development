@@ -1,49 +1,45 @@
 {
-  "name": "taskify-mern-app",
+  "name": "taskify-frontend",
   "version": "1.0.0",
-  "description": "A modern task management and productivity dashboard built with MERN stack",
-  "main": "index.js",
-  "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "cd backend && npm run dev",
-    "client": "cd frontend && npm start",
-    "build": "cd frontend && npm run build",
-    "install-server": "cd backend && npm install",
-    "install-client": "cd frontend && npm install",
-    "install-all": "npm run install-server && npm run install-client",
-    "start": "cd backend && npm start",
-    "heroku-postbuild": "npm run install-all && npm run build"
-  },
-  "keywords": [
-    "mern",
-    "react",
-    "nodejs",
-    "express",
-    "mongodb",
-    "task-management",
-    "productivity",
-    "dashboard",
-    "firebase",
-    "responsive"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  },
-  "engines": {
-    "node": ">=14.0.0",
-    "npm": ">=6.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yourusername/taskify.git"
-  },
-  "bugs": {
-    "url": "https://github.com/yourusername/taskify/issues"
-  },
-  "homepage": "https://yourusername.github.io/taskify",
+  "private": true,
   "dependencies": {
-    "mongoose": "^8.18.3"
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.12.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^6.26.2",
+    "react-scripts": "5.0.1",
+    "react-toastify": "^10.0.5",
+    "framer-motion": "^11.11.17",
+    "lucide-react": "^0.460.0",
+    "date-fns": "^4.1.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
