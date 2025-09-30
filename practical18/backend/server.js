@@ -9,7 +9,15 @@ require("dotenv").config();
 const app = express();
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'https://practical11-c4e74.web.app',
+    'https://practical11-c4e74.firebaseapp.com'
+  ],
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.static("uploads"));
 
